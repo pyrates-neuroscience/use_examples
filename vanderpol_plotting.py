@@ -92,10 +92,10 @@ ax.set_yticks(np.arange(0, n_J, 3))
 ax.set_xticklabels(np.round(omegas[::3], decimals=2))
 ax.set_yticklabels(np.round(weights[::-3], decimals=2))
 plt.title("Coherence between VPO and KO")
-fig.colorbar(im, ax=ax, shrink=0.8)
+fig.colorbar(im, ax=ax, shrink=0.5)
 
 # plot two exemplary time series
-start = 900.0
+start = 1050.0
 for i, (omega, J) in enumerate(zip([0.32, 0.42], [0.5, 1.0])):
 
     ax = fig.add_subplot(grid[i, 2:])
@@ -110,13 +110,14 @@ for i, (omega, J) in enumerate(zip([0.32, 0.42], [0.5, 1.0])):
     key1, key2 = res_map['VPO'].columns.values[idx1], res_map['KO'].columns.values[idx2]
 
     # plot the time series
-    ax.plot(res['VPO'].loc[start:, key1])
-    ax.plot(res['KO'].loc[start:, key2])
-    plt.legend(['Van der Pol', 'Kuramoto'])
-    ax.set_xlabel('time (s)')
-    ax.set_ylabel('Signal magnitude')
+    s = res['VPO'].loc[start:, key1]
+    ax.plot(s / np.max(np.abs(s)), color='black')
+    ax.plot(np.sin(2*np.pi*res['KO'].loc[start:, key2]), color='orange')
 
 # finishing touches
+ax.set_xlabel('time (s)')
+ax.set_ylabel('signal (normalized amplitude)')
+plt.legend(['Van der Pol', 'Kuramoto'])
 fig.set_constrained_layout_pads(w_pad=0.01, h_pad=0.03, hspace=0., wspace=0.)
 fig.canvas.draw()
 fig.savefig('vanderpol.pdf')
