@@ -2,6 +2,7 @@ from matplotlib import gridspec
 import matplotlib.pyplot as plt
 import numpy as np
 import pickle
+from scipy.signal import hilbert, butter, sosfilt, coherence
 
 # preparations
 ##############
@@ -9,12 +10,12 @@ import pickle
 # plot settings
 plt.rcParams['figure.constrained_layout.use'] = True
 plt.rcParams['figure.dpi'] = 400
-plt.rcParams['figure.figsize'] = (10, 6)
+plt.rcParams['figure.figsize'] = (12, 6)
 plt.rcParams['font.size'] = 8.0
 plt.rcParams['axes.titlesize'] = 10
 plt.rcParams['axes.labelsize'] = 10
 plt.rcParams['lines.linewidth'] = 0.7
-plt.rcParams["font.family"] = "cmss"
+plt.rcParams["font.family"] = "sans-serif"
 
 # load data
 data = pickle.load(open('vanderpol_data.pkl', 'rb'))
@@ -32,8 +33,6 @@ fs = 1/(res.index[1] - res.index[0])
 
 # calculate coherences
 ######################
-
-from scipy.signal import hilbert, butter, sosfilt, coherence
 
 
 def get_phase(signal, N, freqs, fs):
@@ -92,7 +91,7 @@ ax.set_yticks(np.arange(0, n_J, 3))
 ax.set_xticklabels(np.round(omegas[::3], decimals=2))
 ax.set_yticklabels(np.round(weights[::-3], decimals=2))
 plt.title("Coherence between VPO and KO")
-fig.colorbar(im, ax=ax, shrink=0.5)
+fig.colorbar(im, ax=ax, shrink=0.6)
 
 # plot two exemplary time series
 start = 1050.0

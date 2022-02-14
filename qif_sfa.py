@@ -8,7 +8,7 @@ qif = CircuitTemplate.from_yaml(
     )
 
 # set model parameters
-qif.update_var(node_vars={'p/qif_sfa_op/Delta': 2.0},
+qif.update_var(node_vars={'p/qif_sfa_op/Delta': 2.0, 'p/qif_sfa_op/alpha': 1.0},
                edge_vars=[('p/qif_sfa_op/r', 'p/qif_sfa_op/r_in', {'weight': 15.0*np.sqrt(2.0)})])
 
 # run function generation

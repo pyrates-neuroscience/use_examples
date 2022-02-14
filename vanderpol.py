@@ -1,4 +1,6 @@
-from pyrates import CircuitTemplate, NodeTemplate
+import numpy as np
+import pickle
+from pyrates import CircuitTemplate, NodeTemplate, grid_search
 
 # define nodes
 VPO = NodeTemplate.from_yaml(
@@ -16,10 +18,6 @@ net = CircuitTemplate(
 
 # adjust the damping parameter of the VPO
 net.update_var({'VPO/vdp_op/mu': 2.0})
-
-# imports
-import numpy as np
-from pyrates import grid_search
 
 # define parameter sweep
 n_om = 20
@@ -49,7 +47,6 @@ results, res_map = grid_search(
     )
 
 # save results to file
-import pickle
 data = {'res': results, 'map': res_map, 'omegas': omegas, 'weights': weights}
 fn = 'vanderpol_data.pkl'
 try:
