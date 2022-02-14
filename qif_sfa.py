@@ -43,7 +43,7 @@ hopf_sols, hopf_cont = qif_auto.run(
 # periodic solution time continuation
 po_sols, po_cont = qif_auto.run(
     origin=hopf_cont, starting_point='UZ1', name='po', DS=1e-4, DSMIN=1e-10, EPSL=1e-08, NPR=10,
-    EPSU=1e-08, EPSS=1e-06, DSMAX=1e-1, NMX=20000, UZR={14: 300.0}, STOP={'UZ2'}, c='ivp'
+    EPSU=1e-08, EPSS=1e-06, DSMAX=1e-1, NMX=10000, UZR={14: 300.0}, STOP={'UZ1'}, c='ivp'
     )
 
 qif_auto.to_file('qif_sfa_data.pkl')
