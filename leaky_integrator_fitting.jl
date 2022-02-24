@@ -1,6 +1,6 @@
 using Distributed
 
-addprocs(6)
+addprocs(3)
 
 @everywhere using BlackBoxOptim, LinearAlgebra, DifferentialEquations, NPZ
 
@@ -15,36 +15,39 @@ addprocs(6)
 end
 
 
-@everywhere function li_eval(t,y,dy,r0,tau,source_idx_0,k_d1,k_d2,k_d3,k_d4,k_d5,k_d6,k_d7,k_d8,k_d9,r_buffered,u_timed_input,target_idx,target_idx_0,r_buffered_idx,u_input,time,weight,m_in,source_idx,u)
+@everywhere function li_eval(t,y,dy,r0,tau,source_idx_0,k_d1,k_d2,k_d3,k_d4,k_d5,k_d6,k_d7,k_d8,k_d9,k_d10,k_d11,u_timed_input,target_idx,u_input,time,weight,source_idx,u)
 
 	r = y[1:10]
-	r_d1 = y[11:110]
-	r_d2 = y[111:210]
-	r_d3 = y[211:310]
-	r_d4 = y[311:410]
-	r_d5 = y[411:510]
-	r_d6 = y[511:610]
-	r_d7 = y[611:648]
-	r_d8 = y[649:686]
-	r_d9 = y[687:724]
+	m_d1 = y[11:110]
+	m_d2 = y[111:210]
+	m_d3 = y[211:310]
+	m_d4 = y[311:410]
+	m_d5 = y[411:510]
+	m_d6 = y[511:610]
+	m_d7 = y[611:710]
+	m_d8 = y[711:810]
+	m_d9 = y[811:910]
+	m_d10 = y[911:1010]
+	m_d11 = y[1011:1110]
 
-	r_buffered[1:62] = @. r_d6[1:62]
-	r_buffered[63:100] = @. r_d9[1:38]
-	r_buffered = @. r_buffered[r_buffered_idx]
+	m = @. tanh(r)
+	m_buffered = @. m_d11
 	u_timed_input[1] = interp(t, time, u_input)
-	m_in[target_idx] = @. r_buffered*weight
-	u[target_idx_0] = @. u_timed_input[source_idx]
+	m_in = *(weight, m_buffered)
+	u[target_idx] = @. u_timed_input[source_idx]
 
-	dy[1:10] = @. u + tanh(m_in) + (-r + r0)/tau
-	dy[11:110] = @. k_d1*(-r_d1 + r[source_idx_0])
-	dy[111:210] = @. k_d2*(r_d1 - r_d2)
-	dy[211:310] = @. k_d3*(r_d2 - r_d3)
-	dy[311:410] = @. k_d4*(r_d3 - r_d4)
-	dy[411:510] = @. k_d5*(r_d4 - r_d5)
-	dy[511:610] = @. k_d6*(r_d5 - r_d6)
-	dy[611:648] = @. k_d7*(-r_d7 + r_d6[63:100])
-	dy[649:686] = @. k_d8*(r_d7 - r_d8)
-	dy[687:724] = @. k_d9*(r_d8 - r_d9)
+	dy[1:10] = @. m_in + u + (-r + r0)/tau
+	dy[11:110] = @. k_d1*(-m_d1 + m[source_idx_0])
+	dy[111:210] = @. k_d2*(m_d1 - m_d2)
+	dy[211:310] = @. k_d3*(m_d2 - m_d3)
+	dy[311:410] = @. k_d4*(m_d3 - m_d4)
+	dy[411:510] = @. k_d5*(m_d4 - m_d5)
+	dy[511:610] = @. k_d6*(m_d5 - m_d6)
+	dy[611:710] = @. k_d7*(m_d6 - m_d7)
+	dy[711:810] = @. k_d8*(m_d7 - m_d8)
+	dy[811:910] = @. k_d9*(m_d8 - m_d9)
+	dy[911:1010] = @. k_d10*(-m_d10 + m_d9)
+	dy[1011:1110] = @. k_d11*(m_d10 - m_d11)
 
 	return dy
 end
@@ -57,7 +60,7 @@ end
 
 # import function arguments
 @everywhere vars = npzread("/Users/rgf3807/PycharmProjects/use_examples/li_params.npz")
-@everywhere args = "r0,tau,source_idx_0,k_d1,k_d2,k_d3,k_d4,k_d5,k_d6,k_d7,k_d8,k_d9,r_buffered,u_timed_input,target_idx,target_idx_0,r_buffered_idx,u_input,time,weight,m_in,source_idx,u"
+@everywhere args = "r0,tau,source_idx_0,k_d1,k_d2,k_d3,k_d4,k_d5,k_d6,k_d7,k_d8,k_d9,k_d10,k_d11,u_timed_input,target_idx,u_input,time,weight,source_idx,u"
 @everywhere args = split(args, ",")
 
 @everywhere function ode_call(du, u, c, t)
@@ -65,7 +68,12 @@ end
 	return li_eval(t, u, du, [vars[key] for key in args]...)
 end
 
-# import target data
+# setup ODE problem
+@everywhere T = 50.0
+@everywhere w = zeros(length(vars["weight"]))
+@everywhere ode = ODEProblem(ode_call, vars["y"], (0.0, T), w)
+
+# define function call for blackboxoptim
 @everywhere target = npzread("/Users/rgf3807/PycharmProjects/use_examples/li_target.npy")
 @everywhere z = target'
 @everywhere function optim(p)
@@ -73,15 +81,10 @@ end
 	return l2_loss(y[1:10, 1:5000], z)
 end
 
-# setup ODE problem
-@everywhere T = 50.0
-@everywhere w = zeros(length(vars["weight"]))
-@everywhere ode = ODEProblem(ode_call, vars["y"], (0.0, T), w)
-
 # perform optimization
 method = :separable_nes
-opt = bbsetup(optim; Method=method, Parameters=w, SearchRange=(-5.0, 5.0), NumDimensions=length(w),
-	MaxSteps=100, TargetFitness=0.0, PopulationSize=1000, lambda=100)
+opt = bbsetup(optim; Method=method, Parameters=w, SearchRange=(-10.1, 10.1), NumDimensions=length(w),
+	MaxSteps=500, TargetFitness=0.0, PopulationSize=1000, lambda=50, Workers = workers())
 el = @elapsed res = bboptimize(opt)
 
 # retrieve optimization results

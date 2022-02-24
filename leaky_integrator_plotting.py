@@ -5,7 +5,10 @@ import numpy as np
 # preparations
 ##############
 
+import os
+p = os.environ['PATH']
 # plot settings
+plt.rc('text', usetex=True)
 plt.rcParams['figure.constrained_layout.use'] = True
 plt.rcParams['figure.dpi'] = 400
 plt.rcParams['figure.figsize'] = (12, 6)
@@ -33,6 +36,8 @@ for row, col, w_t, w in zip(idx_r, idx_c, target_params['weight'], fitted_data["
     C[row, col] = w
     C_t[row, col] = w_t
 
+np.save("c_fitted.npy", C)
+
 # plotting
 ##########
 
@@ -44,8 +49,8 @@ grid = gridspec.GridSpec(nrows=2, ncols=9, figure=fig)
 for i, mat in enumerate([C, C_t]):
     ax = fig.add_subplot(grid[i, :2])
     im = ax.imshow(mat, aspect='equal')
-    ax.set_xlabel(r'LI #')
-    ax.set_ylabel(r'LI #')
+    ax.set_xlabel('LI index')
+    ax.set_ylabel('LI index')
     fig.colorbar(im, ax=ax, shrink=0.6)
     if i == 0:
         plt.title(r"\textbf{(A)} Connectivity matrices")
@@ -53,8 +58,8 @@ for i, mat in enumerate([C, C_t]):
 # plot sum of rows
 for i, mat in enumerate([C, C_t]):
     ax = fig.add_subplot(grid[i, 2])
-    im = ax.imshow(np.sum(mat, axis=1, keepdims=True), aspect='equal')
-    ax.set_ylabel(r'LI #')
+    im = ax.imshow(np.sum(mat, axis=0, keepdims=True).T, aspect='equal')
+    ax.set_ylabel('LI index')
     fig.colorbar(im, ax=ax, shrink=0.6)
     if i == 0:
         plt.title(r"\textbf{(B)} Summed inputs")

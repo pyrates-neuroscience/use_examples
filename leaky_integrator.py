@@ -9,8 +9,8 @@ nodes = [f"p{i+1}" for i in range(N)]
 net = CircuitTemplate(name="li_coupled", nodes={key: li for key in nodes})
 
 # edge definition
-C = np.random.uniform(low=-5.0, high=5.0, size=(N, N))
-D = np.random.choice([1.0, 3.0], size=(N, N))
+C = np.random.uniform(low=-10.0, high=10.0, size=(N, N))
+D = np.random.choice([1.0, 2.0, 3.0], size=(N, N))
 S = D*0.3
 net.add_edges_from_matrix(source_var="tanh_op/m", target_var="li_op/m_in",
                           nodes=nodes, weight=C,
@@ -18,7 +18,7 @@ net.add_edges_from_matrix(source_var="tanh_op/m", target_var="li_op/m_in",
                           )
 
 # define input
-T = 50.0
+T = 100.0
 dt = 1e-4
 inp = np.sin(2 * np.pi * 0.2 * np.linspace(0, T, int(np.round(T / dt)))) * 0.1
 
