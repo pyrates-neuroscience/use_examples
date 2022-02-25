@@ -1,6 +1,6 @@
 using Distributed
 
-addprocs(3)
+addprocs(8)
 
 @everywhere using BlackBoxOptim, LinearAlgebra, DifferentialEquations, NPZ
 
@@ -63,14 +63,22 @@ end
 @everywhere args = "r0,tau,source_idx_0,k_d1,k_d2,k_d3,k_d4,k_d5,k_d6,k_d7,k_d8,k_d9,k_d10,k_d11,u_timed_input,target_idx,u_input,time,weight,source_idx,u"
 @everywhere args = split(args, ",")
 
+# basic problem parameters
+@everywhere T = 100.0
+@everywhere steps = 10000
+@everywhere N = 10
+
+# define function for the parameter update
+@everywhere idx_r = range(1, N)
 @everywhere function ode_call(du, u, c, t)
-	vars["weight"] = c
+	for i=1:N
+		idx_c = range((i-1)*N+1,i*N)
+		vars["weight"][idx_r, idx_c] = Diagonal(c[idx_c])
+	end
 	return li_eval(t, u, du, [vars[key] for key in args]...)
 end
 
-# setup ODE problem
-@everywhere T = 50.0
-@everywhere w = zeros(length(vars["weight"]))
+@everywhere w = zeros(N^2)
 @everywhere ode = ODEProblem(ode_call, vars["y"], (0.0, T), w)
 
 # define function call for blackboxoptim
@@ -78,24 +86,26 @@ end
 @everywhere z = target'
 @everywhere function optim(p)
 	y = Array(solve(remake(ode, p=p), Tsit5(), saveat=1e-2, reltol=1e-6, abstol=1e-6))
-	return l2_loss(y[1:10, 1:5000], z)
+	return l2_loss(y[1:N, 1:steps], z)
 end
 
 # perform optimization
 method = :separable_nes
 opt = bbsetup(optim; Method=method, Parameters=w, SearchRange=(-10.1, 10.1), NumDimensions=length(w),
-	MaxSteps=500, TargetFitness=0.0, PopulationSize=1000, lambda=50, Workers = workers())
+	MaxSteps=500, TargetFitness=0.0, PopulationSize=1000, lambda=10, Workers = workers())
 el = @elapsed res = bboptimize(opt)
 
 # retrieve optimization results
 w_winner = best_candidate(res)
+C = zeros(size(vars["weight"]))
+for i=1:N
+	idx_c = range((i-1)*N+1,i*N)
+	C[idx_r, idx_c] = Diagonal(w_winner[idx_c])
+end
 f = best_fitness(res)
 
 # simulate signal of the winner
-y = Array(solve(remake(ode, p=w_winner), Tsit5(), saveat=1e-2, reltol=1e-6, abstol=1e-6))[1:10, 1:5000]
-
-# print final result
-show(sum(vars["weight"] .- w_winner))
+y = Array(solve(remake(ode, p=w_winner), Tsit5(), saveat=1e-2, reltol=1e-6, abstol=1e-6))[1:N, 1:steps]
 
 # save data to file
-npzwrite("/Users/rgf3807/PycharmProjects/use_examples/li_fitted.npz", Dict("weight" => w_winner, "y" => y'))
+npzwrite("/Users/rgf3807/PycharmProjects/use_examples/li_fitted.npz", Dict("weight" => C, "y" => y'))
