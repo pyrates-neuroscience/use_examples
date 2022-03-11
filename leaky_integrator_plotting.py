@@ -29,14 +29,9 @@ fitted_data = np.load("li_fitted.npz")
 N = len(target_params["r0"])
 C = np.zeros((N, N))
 C_t = np.zeros_like(C)
-idx_c = target_params['source_idx_0'] - 1
-idx_r = target_params['target_idx'] - 1
-
-for row, col, w_t, w in zip(idx_r, idx_c, target_params['weight'], fitted_data["weight"]):
-    C[row, col] = w
-    C_t[row, col] = w_t
-
-np.save("c_fitted.npy", C)
+for i, (w_t, w) in enumerate(zip(target_params['weight'], fitted_data["weight"])):
+    C[i, :] = w[i::N]
+    C_t[i, :] = w_t[i::N]
 
 # plotting
 ##########
@@ -46,32 +41,21 @@ fig = plt.figure(1)
 grid = gridspec.GridSpec(nrows=2, ncols=9, figure=fig)
 
 # plot raw matrices
-for i, mat in enumerate([C, C_t]):
-    ax = fig.add_subplot(grid[i, :2])
+for i, (mat, subplot, cond) in enumerate(zip([C, C_t], ['A', 'C'], ['Fitted', 'Target'])):
+    ax = fig.add_subplot(grid[i, :3])
     im = ax.imshow(mat, aspect='equal')
     ax.set_xlabel('LI index')
     ax.set_ylabel('LI index')
     fig.colorbar(im, ax=ax, shrink=0.6)
-    if i == 0:
-        plt.title(r"\textbf{(A)} Connectivity matrices")
-
-# plot sum of rows
-for i, mat in enumerate([C, C_t]):
-    ax = fig.add_subplot(grid[i, 2])
-    im = ax.imshow(np.sum(mat, axis=0, keepdims=True).T, aspect='equal')
-    ax.set_ylabel('LI index')
-    fig.colorbar(im, ax=ax, shrink=0.6)
-    if i == 0:
-        plt.title(r"\textbf{(B)} Summed inputs")
+    plt.title(fr"\textbf{{({subplot})}} {cond} connectivity matrix")
 
 # plot signals
-for i, sig in enumerate([fitted_data["y"], target_signal]):
+for i, (sig, subplot, cond) in enumerate(zip([fitted_data["y"], target_signal], ["B", "D"], ["Fitted", "Target"])):
     ax = fig.add_subplot(grid[i, 3:])
     ax.plot(sig)
     ax.set_xlabel('time (s)')
     ax.set_ylabel('rate (x)')
-    if i == 0:
-        plt.title(r"\textbf{(C)} Network signals")
+    ax.set_title(fr"\textbf{{({subplot})}} {cond} network signal")
 
 # finishing touches
 fig.set_constrained_layout_pads(w_pad=0.01, h_pad=0.03, hspace=0., wspace=0.)
