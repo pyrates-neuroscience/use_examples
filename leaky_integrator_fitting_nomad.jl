@@ -124,4 +124,4 @@ p4 = heatmap(vars["weight"])
 display(plot(p3, p4, p1, p2, layout=(4,1)))
 
 # save data to file
-npzwrite("/Users/rgf3807/PycharmProjects/use_examples/li_fitted.npz", Dict("weight" => C, "y" => y', "fitness" => res.bbo_best_feas))
+npzwrite("li_fitted.npz", Dict("weight" => C, "y" => y', "fitness" => res.bbo_best_feas))

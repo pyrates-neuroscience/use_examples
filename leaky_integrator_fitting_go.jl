@@ -85,7 +85,7 @@ function ode_call(du, u, c, t)
 end
 
 # define function call for blackboxoptim
-target = npzread("/Users/rgf3807/PycharmProjects/use_examples/li_target.npy")
+target = npzread("li_target.npy")
 z = target'
 solver = Tsit5()
 function objective_func(p, p_tmp)

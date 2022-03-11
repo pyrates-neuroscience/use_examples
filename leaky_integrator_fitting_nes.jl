@@ -86,7 +86,7 @@ w = zeros(N^2)
 ode = ODEProblem(ode_call, vars["y"], (0.0, T), w)
 
 # define function call for blackboxoptim
-target = npzread("/Users/rgf3807/PycharmProjects/use_examples/li_target.npy")
+target = npzread("li_target.npy")
 z = target'
 p1 = plot(target)
 p2 = heatmap(vars["weight"])
