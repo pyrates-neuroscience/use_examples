@@ -55,7 +55,7 @@ function l2_loss(x, y)
 end
 
 # import function arguments
-vars = npzread("/Users/rgf3807/PycharmProjects/use_examples/li_params.npz")
+vars = npzread("li_params.npz")
 args = "r0,tau,source_idx,k_d1,k_d2,k_d3,k_d4,k_d5,k_d6,k_d7,k_d8,k_d9,k_d10,k_d11,u_timed_input,u_input,time,weight,weight_0"
 args = split(args, ",")
 
@@ -127,4 +127,4 @@ p4 = heatmap(vars["weight"])
 display(plot(p3, p4, p1, p2, layout=(4,1)))
 
 # save data to file
-npzwrite("/Users/rgf3807/PycharmProjects/use_examples/li_fitted.npz", Dict("weight" => C, "y" => y', "fitness" => Evolutionary.minimum(res)))
+npzwrite("li_fitted.npz", Dict("weight" => C, "y" => y', "fitness" => Evolutionary.minimum(res)))

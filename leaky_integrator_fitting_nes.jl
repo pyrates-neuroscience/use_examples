@@ -55,7 +55,7 @@ function l2_loss(x, y)
 end
 
 # import function arguments
-vars = npzread("/Users/rgf3807/PycharmProjects/use_examples/li_params.npz")
+vars = npzread("li_params.npz")
 args = "r0,tau,source_idx,k_d1,k_d2,k_d3,k_d4,k_d5,k_d6,k_d7,k_d8,k_d9,k_d10,k_d11,u_timed_input,u_input,time,weight,weight_0"
 args = split(args, ",")
 
@@ -113,4 +113,4 @@ end
 y = Array(DifferentialEquations.solve(remake(ode, p=w_winner), solver, saveat=1e-2, reltol=1e-3, abstol=1e-6))[1:N, 1:steps]
 
 # save data to file
-npzwrite("/Users/rgf3807/PycharmProjects/use_examples/li_fitted.npz", Dict("weight" => C, "y" => y', "fitness" => fitness))
+npzwrite("li_fitted.npz", Dict("weight" => C, "y" => y', "fitness" => fitness))
