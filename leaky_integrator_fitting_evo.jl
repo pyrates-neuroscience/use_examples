@@ -81,25 +81,21 @@ function ode_call(du, u, c, t)
 	return li_eval(t, u, du, [key == "weight" ? c_new : deepcopy(vars[key]) for key in args]...)
 end
 
-# define the ODE problem
-w = zeros(N^2)
-ode = ODEProblem(ode_call, vars["y"], (0.0, T), w)
-
 # define function call for blackboxoptim
 target = npzread("li_target.npy")
 z = target'
 solver = Tsit5()
 function objective_func(p)
-	y = Array(DifferentialEquations.solve(remake(ode, p=p), solver, saveat=1e-2, reltol=1e-3, abstol=1e-6))
+	ode = ODEProblem(ode_call, zeros(size(vars["y"])), (0.0, T), p)
+	y = Array(DifferentialEquations.solve(ode, solver, saveat=1e-2, reltol=1e-3, abstol=1e-6))
 	return l2_loss(y[1:N, 1:steps], z)
 end
-
 # display original connectivity matrix and target signal
 p1 = plot(target)
 p2 = heatmap(vars["weight"])
 
 # define optimization problem
-n_par = length(w)
+n_par = N^2
 lower = [-1.0 for i=1:n_par]
 upper = [1.0 for i=1:n_par]
 constr = BoxConstraints(lower, upper)
@@ -117,7 +113,8 @@ for i=1:N
 end
 
 # simulate signal of the winner
-y = Array(DifferentialEquations.solve(remake(ode, p=w_winner), solver, saveat=1e-2, reltol=1e-3, abstol=1e-6))[1:N, 1:steps]
+ode = ODEProblem(ode_call, zeros(size(vars["y"])), (0.0, T), w_winner)
+y = Array(DifferentialEquations.solve(ode, solver, saveat=1e-2, reltol=1e-3, abstol=1e-6))[1:N, 1:steps]
 
 # plot the result of the optimization
 p1 = plot(target)
