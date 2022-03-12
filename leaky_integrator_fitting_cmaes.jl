@@ -81,16 +81,13 @@ function ode_call(du, u, c, t)
 	return li_eval(t, u, du, [key == "weight" ? c_new : deepcopy(vars[key]) for key in args]...)
 end
 
-# define the ODE problem
-w = zeros(N^2)
-ode = ODEProblem(ode_call, vars["y"], (0.0, T), w)
-
 # define function call for blackboxoptim
 target = npzread("li_target.npy")
 z = target'
 solver = Tsit5()
 function objective_func(p)
-	y = Array(DifferentialEquations.solve(remake(ode, p=p), solver, saveat=1e-2, reltol=1e-3, abstol=1e-6))
+	ode = ODEProblem(ode_call, zeros(size(vars["y"])), (0.0, T), p)
+	y = Array(DifferentialEquations.solve(ode, solver, saveat=1e-2, reltol=1e-3, abstol=1e-6))
 	return l2_loss(y[1:N, 1:steps], z)
 end
 
@@ -101,7 +98,8 @@ p2 = heatmap(vars["weight"])
 # define callback function for intermediate plotting
 function cb(obj, inp, fval, ranks)
 	p = xbest(obj)
-	y = Array(DifferentialEquations.solve(remake(ode, p=p), solver, saveat=1e-2, reltol=1e-3, abstol=1e-6))
+	ode = ODEProblem(ode_call, zeros(size(vars["y"])), (0.0, T), p)
+	y = Array(DifferentialEquations.solve(ode, solver, saveat=1e-2, reltol=1e-3, abstol=1e-6))
 	p3 = plot(y[1:N, 1:steps]')
 	p4 = heatmap(vars["weight"])
 	display(plot(p3, p4, p1, p2, layout=(4,1)))
@@ -109,12 +107,12 @@ function cb(obj, inp, fval, ranks)
 end
 
 # define optimization problem
-n_par = length(w)
+n_par = N^2
 lower = [-1.0 for i=1:n_par]
 upper = [1.0 for i=1:n_par]
 
 # perform optimization
-res = minimize(objective_func, w, 1.0, lower=lower, upper=upper, popsize=1000, maxiter=1000, ftarget=0, xtol=0.1,
+res = minimize(objective_func, zeros(n_par), 1.0, lower=lower, upper=upper, popsize=1000, maxiter=1000, ftarget=0, xtol=0.1,
 	multi_threading=true, verbosity=1, callback=cb)
 
 # retrieve optimization results
@@ -126,7 +124,8 @@ for i=1:N
 end
 
 # simulate signal of the winner
-y = Array(DifferentialEquations.solve(remake(ode, p=w_winner), solver, saveat=1e-2, reltol=1e-3, abstol=1e-6))[1:N, 1:steps]
+ode = ODEProblem(ode_call, zeros(size(vars["y"])), (0.0, T), w_winner)
+y = Array(DifferentialEquations.solve(ode, solver, saveat=1e-2, reltol=1e-3, abstol=1e-6))[1:N, 1:steps]
 
 # save data to file
 npzwrite("li_fitted.npz", Dict("weight" => C, "y" => y', "fitness" => fbest(res)))
