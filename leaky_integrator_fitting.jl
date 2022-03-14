@@ -112,7 +112,7 @@ end
 # perform optimization
 method = :xnes
 opt = bbsetup(optim; Method=method, Parameters=w, SearchRange=(-1.0, 1.0), NumDimensions=length(w), Workers=workers(),
-	MaxSteps=1000, TargetFitness=0.0, lambda=10, PopulationSize=2000, CallbackFunction=cb, CallbackInterval=1.0)
+	MaxSteps=1000, TargetFitness=0.0, lambda=50, PopulationSize=5000, CallbackFunction=cb, CallbackInterval=1.0)
 el = @elapsed res = bboptimize(opt)
 
 # retrieve optimization results

@@ -112,7 +112,7 @@ end
 n_par = N^2
 lower = [-1.0 for i=1:n_par]
 upper = [1.0 for i=1:n_par]
-method = MultistartOptimization.TikTak(500)
+method = MultistartOptimization.TikTak(1000)
 localmethod = BBO_adaptive_de_rand_1_bin_radiuslimited()
 f = GalacticOptim.OptimizationFunction(objective_func)
 prob = GalacticOptim.OptimizationProblem(f, zeros(n_par), lb=lower, ub=upper)
