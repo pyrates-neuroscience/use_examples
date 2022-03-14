@@ -129,7 +129,8 @@ for i=1:N
 end
 
 # simulate signal of the winner
-y = Array(DifferentialEquations.solve(remake(ode, p=w_winner), solver, saveat=1e-2, reltol=1e-3, abstol=1e-6))[1:N, 1:steps]
+ode = ODEProblem(ode_call, zeros(y_shape), (0.0, T), w_winner)
+y = Array(DifferentialEquations.solve(ode, solver, saveat=1e-2, reltol=1e-3, abstol=1e-6))[1:N, 1:steps]
 
 # plot the final result
 cb(w_winner, [])

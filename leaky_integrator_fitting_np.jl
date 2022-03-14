@@ -63,6 +63,7 @@ args = split(args, ",")
 T = 100.0
 steps = 10000
 N = 5
+y_shape = size(vars["y"])
 
 # define functions for the parameter update
 idx_r = range(1, N)
@@ -79,16 +80,13 @@ function ode_call(du, u, c, t)
 	return li_eval(t, u, du, [vars[key] for key in args]...)
 end
 
-# define the ODE problem
-w = zeros(N^2)
-ode = ODEProblem(ode_call, vars["y"], (0.0, T), w)
-
 # define function call for blackboxoptim
 target = npzread("li_target.npy")
 z = target'
 solver = Tsit5()
 function optim(p)
-	y = Array(solve(remake(ode, p=p), solver, saveat=1e-2, reltol=1e-3, abstol=1e-6))
+	ode = ODEProblem(ode_call, zeros(y_shape), (0.0, T), p)
+	y = Array(solve(ode, solver, saveat=1e-2, reltol=1e-3, abstol=1e-6))
 	return l2_loss(y[1:N, 1:steps], z)
 end
 
@@ -99,14 +97,15 @@ p2 = heatmap(vars["weight"])
 # define callback function for intermediate plotting
 function cb(oc)
 	p = best_candidate(oc)
-	y = Array(solve(remake(ode, p=p), solver, saveat=1e-2, reltol=1e-3, abstol=1e-6))
+	ode = ODEProblem(ode_call, zeros(y_shape), (0.0, T), p)
+	y = Array(solve(ode, solver, saveat=1e-2, reltol=1e-3, abstol=1e-6))
 	p3 = plot(y[1:N, 1:steps]')
 	p4 = heatmap(vars["weight"])
 	display(plot(p3, p4, p1, p2, layout=(4,1)))
 end
 
 # perform optimization
-method = :adaptive_de_rand_1_bin_radiuslimited
+method = :xnes
 opt = bbsetup(optim; Method=method, Parameters=w, SearchRange=(-1.1, 1.1), NumDimensions=length(w), NThreads=Threads.nthreads()-1,
 	MaxSteps=1000, TargetFitness=0.0, lambda=10, PopulationSize=2000, CallbackFunction=cb, CallbackInterval=1.0)
 el = @elapsed res = bboptimize(opt)
@@ -121,7 +120,8 @@ end
 f = best_fitness(res)
 
 # simulate signal of the winner
-y = Array(solve(remake(ode, p=w_winner), solver, saveat=1e-2, reltol=1e-3, abstol=1e-6))[1:N, 1:steps]
+ode = ODEProblem(ode_call, zeros(y_shape), (0.0, T), p)
+y = Array(solve(ode, solver, saveat=1e-2, reltol=1e-3, abstol=1e-6))[1:N, 1:steps]
 
 # save data to file
 npzwrite("li_fitted.npz", Dict("weight" => C, "y" => y'))
