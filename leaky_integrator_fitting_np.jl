@@ -106,8 +106,8 @@ end
 
 # perform optimization
 method = :xnes
-opt = bbsetup(optim; Method=method, Parameters=w, SearchRange=(-1.1, 1.1), NumDimensions=length(w), NThreads=Threads.nthreads()-1,
-	MaxSteps=1000, TargetFitness=0.0, lambda=10, PopulationSize=2000, CallbackFunction=cb, CallbackInterval=1.0)
+opt = bbsetup(optim; Method=method, Parameters=zeros(N^2), SearchRange=(-1.1, 1.1), NumDimensions=N^2, NThreads=Threads.nthreads()-1,
+	MaxSteps=1000, TargetFitness=0.0, lambda=50, PopulationSize=5000, CallbackFunction=cb, CallbackInterval=1.0)
 el = @elapsed res = bboptimize(opt)
 
 # retrieve optimization results
