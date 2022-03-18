@@ -124,7 +124,7 @@ end
 end
 
 # define optimization method
-method = :xnes
+method = :probabilistic_descent
 
 # perform optimization
 el = @elapsed res = bboptimize(objective_func, w_0; Method=method, SearchRange=(-1.0, 1.0), Workers=workers(),
