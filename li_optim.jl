@@ -112,7 +112,8 @@ end
 @everywhere p2 = heatmap(vars["weight"])
 
 # define callback function for intermediate plotting
-@everywhere function cb(p)
+@everywhere function cb(oc)
+    p = best_candidate(oc)
 	ode = ODEProblem(ode_call, zeros(y_shape), (0.0, T), p)
 	y = Array(solve(ode, solver, saveat=1e-2, reltol=1e-3, abstol=1e-6))
 	p3 = plot(y[1:N, 1:steps]')
@@ -125,7 +126,7 @@ end
 # define optimization problem
 method = :generating_set_search
 opt = bbsetup(objective_func; Method=method, Parameters=w_0, SearchRange=(-1.0, 1.0), NumDimensions=length(w_0), Workers=workers(),
-	MaxSteps=2000, TargetFitness=0.0, FitnessTolerance=1.0, lambda=50, PopulationSize=5000, CallbackFunction=cb, CallbackInterval=1.0)
+	MaxSteps=2000, TargetFitness=0.0, FitnessTolerance=1.0, lambda=10, PopulationSize=1000, CallbackFunction=cb, CallbackInterval=1.0)
 
 # perform optimization
 el = @elapsed res = bboptimize(opt)
