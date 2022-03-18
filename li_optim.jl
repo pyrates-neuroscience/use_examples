@@ -1,6 +1,6 @@
 using Distributed
 
-addprocs(3)
+addprocs(8)
 
 @everywhere using LinearAlgebra, DifferentialEquations, NPZ, Plots, GalacticOptim, BlackBoxOptim, Base.Threads
 
