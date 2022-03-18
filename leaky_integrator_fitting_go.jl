@@ -1,6 +1,4 @@
-using LinearAlgebra, DifferentialEquations, NPZ, Plots, GalacticOptim, MultistartOptimization, BlackBoxOptim, Base.Threads
-
-display(Threads.nthreads())
+using LinearAlgebra, DifferentialEquations, NPZ, Plots, GalacticOptim, MultistartOptimization, BlackBoxOptim
 
 function interp(x_new, x, y)
     idx = argmin(abs.(x.-x_new))
@@ -118,7 +116,7 @@ f = GalacticOptim.OptimizationFunction(objective_func)
 prob = GalacticOptim.OptimizationProblem(f, zeros(n_par), lb=lower, ub=upper)
 
 # perform optimization
-res = GalacticOptim.solve(prob, method, localmethod, local_maxiters=1000)
+res = GalacticOptim.solve(prob, method, localmethod, local_maxiters=1000, use_threads=true)
 
 # retrieve optimization results
 w_winner = res.u
