@@ -21,8 +21,8 @@ plt.rcParams["font.family"] = "sans-serif"
 # load data
 target_params = np.load("li_params.npz")
 target_signal = np.load("li_target.npy")
-fitted_data = np.load("li_fitted.npz")
-print(fitted_data["fitness"])
+fitted_data = np.load("li_fitted_o.npz")
+#print(fitted_data["fitness"])
 
 # reconstruct connectivity matrices
 ###################################
