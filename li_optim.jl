@@ -1,4 +1,4 @@
-using LinearAlgebra, DifferentialEquations, NPZ, Plots, GalacticOptim, BlackBoxOptim
+using LinearAlgebra, DifferentialEquations, NPZ, Plots, GalacticOptim, BlackBoxOptim, Base.Threads
 
 gr()
 
@@ -131,7 +131,7 @@ f = GalacticOptim.OptimizationFunction(objective_func)
 prob = GalacticOptim.OptimizationProblem(f, w_0, lb=lower, ub=upper)
 
 # perform optimization
-res = GalacticOptim.solve(prob, method, maxiters=1000, cb=cb)
+res = GalacticOptim.solve(prob, method, maxiters=1000, cb=cb, PopulationSize=1000, TargetFitness=0.0, FitnessTolerance=1.0, NThreads=Threads.nthreads()-1)
 
 # retrieve optimization results
 w_winner = res.u
