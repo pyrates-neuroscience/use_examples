@@ -128,7 +128,7 @@ method = :probabilistic_descent
 
 # perform optimization
 el = @elapsed res = bboptimize(objective_func, w_0; Method=method, SearchRange=(-1.0, 1.0), Workers=workers(),
-	MaxSteps=2000, TargetFitness=0.0, FitnessTolerance=1.0, lambda=10, PopulationSize=1000,
+	MaxSteps=5000, TargetFitness=0.0, FitnessTolerance=1.0, lambda=50, PopulationSize=1000,
 	CallbackFunction=cb, CallbackInterval=1.0, NumDimensions=length(w_0))
 
 # retrieve optimization results
