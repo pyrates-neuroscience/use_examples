@@ -144,8 +144,5 @@ f = best_fitness(res)
 ode = ODEProblem(ode_call, zeros(y_shape), (0.0, T), w_winner)
 y = Array(solve(ode, solver, saveat=1e-2, reltol=1e-3, abstol=1e-6))[1:N, 1:steps]
 
-# plot the final result
-cb(w_winner, [])
-
 # save data to file
 npzwrite("li_fitted.npz", Dict("weight" => C, "y" => y', "fitness" => f))
