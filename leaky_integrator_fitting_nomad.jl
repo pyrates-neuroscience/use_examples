@@ -100,7 +100,7 @@ lower = [-1.0 for i=1:n_par]
 upper = [1.0 for i=1:n_par]
 prob = NomadProblem(n_par, 1, ["OBJ"], objective_func, lower_bound=lower, upper_bound=upper)
 prob.options.display_degree = 2
-prob.options.lh_search = (1000, 100)
+prob.options.lh_search = (10000, 1000)
 
 # perform optimization
 res = NOMAD.solve(prob, w)
@@ -124,4 +124,4 @@ p4 = heatmap(vars["weight"])
 display(plot(p3, p4, p1, p2, layout=(4,1)))
 
 # save data to file
-npzwrite("li_fitted.npz", Dict("weight" => C, "y" => y', "fitness" => res.bbo_best_feas))
+npzwrite("li_fitted2.npz", Dict("weight" => C, "y" => y', "fitness" => res.bbo_best_feas))
