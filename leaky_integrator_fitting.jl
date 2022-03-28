@@ -64,8 +64,8 @@ end
 @everywhere args = split(args, ",")
 
 # basic problem parameters
-@everywhere T = 100.0
-@everywhere steps = 10000
+@everywhere T = 150.0
+@everywhere steps = 15000
 @everywhere N = 5
 
 # define functions for the parameter update
