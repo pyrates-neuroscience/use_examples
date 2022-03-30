@@ -4,15 +4,15 @@ clear_frontend_caches()
 
 # node definition
 li = NodeTemplate.from_yaml("model_templates.base_templates.tanh_node")
-N = 5
+N = 3
 nodes = [f"p{i+1}" for i in range(N)]
 net = CircuitTemplate(name="li_coupled", nodes={key: li for key in nodes})
 
 # edge definition
-C = np.load("C.npy")  #np.random.uniform(low=-1.0, high=1.0, size=(N, N))
+C = np.load("C.npy")  #np.random.uniform(low=-2.0, high=2.0, size=(N, N))
 D = np.load("D.npy")  #np.random.choice([1.0, 2.0, 3.0], size=(N, N))
-# np.save("C.npy", C)
-# np.save("D.npy", D)
+#np.save("C.npy", C)
+#np.save("D.npy", D)
 S = D*0.3
 net.add_edges_from_matrix(source_var="tanh_op/m", target_var="li_op/m_in",
                           nodes=nodes, weight=C,
@@ -29,7 +29,8 @@ res = net.run(simulation_time=T, step_size=dt, sampling_step_size=1e-2,
               solver="scipy", method="RK45", outputs=["all/li_op/r"], rtol=1e-3, atol=1e-6,
               inputs={"all/li_op/u": inp}, backend="julia", clear=False,
               func_name="li_eval", constants_file_name="li_params.npz",
-              julia_path="/Program Files/Julia/Julia-1.7.1/bin/julia.exe")
+              julia_path="/Program Files/Julia/Julia-1.7.1/bin/julia.exe"
+              )
 
 import matplotlib.pyplot as plt
 plt.plot(res)
