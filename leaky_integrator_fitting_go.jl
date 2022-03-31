@@ -60,8 +60,8 @@ args = "r0,tau,source_idx,k_d1,k_d2,k_d3,k_d4,k_d5,k_d6,k_d7,k_d8,k_d9,k_d10,k_d
 args = split(args, ",")
 
 # basic problem parameters
-T = 100.0
-steps = 10000
+T = 150.0
+steps = 15000
 N = 3
 y_shape = size(vars["y"])
 
