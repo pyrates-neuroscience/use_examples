@@ -1,6 +1,6 @@
 using Distributed
 
-addprocs(2)
+addprocs(12)
 
 @everywhere using BlackBoxOptim, LinearAlgebra, DifferentialEquations, NPZ, Plots
 
@@ -112,7 +112,7 @@ end
 # perform optimization
 method = :xnes
 opt = bbsetup(optim; Method=method, Parameters=w, SearchRange=(-2.0, 2.0), NumDimensions=length(w), Workers=workers(),
-	MaxSteps=2, TargetFitness=0.0, lambda=1, PopulationSize=1000, CallbackFunction=cb, CallbackInterval=1.0)
+	MaxSteps=2000, TargetFitness=0.0, lambda=10, PopulationSize=10000, CallbackFunction=cb, CallbackInterval=1.0)
 el = @elapsed res = bboptimize(opt)
 
 # retrieve optimization results
