@@ -59,7 +59,7 @@ end
 end
 
 # import function arguments
-@everywhere vars = npzread("li_params.npz")
+@everywhere vars = npzread("/home/rgf3807/PycharmProjects/use_examples/li_params.npz")
 @everywhere args = "r0,tau,source_idx,k_d1,k_d2,k_d3,k_d4,k_d5,k_d6,k_d7,k_d8,k_d9,k_d10,k_d11,u_timed_input,u_input,time,weight,weight_0"
 @everywhere args = split(args, ",")
 
@@ -88,7 +88,7 @@ end
 @everywhere ode = ODEProblem(ode_call, vars["y"], (0.0, T), w)
 
 # define function call for blackboxoptim
-@everywhere target = npzread("li_target.npy")
+@everywhere target = npzread("/home/rgf3807/PycharmProjects/use_examples/li_target.npy")
 @everywhere z = target'
 @everywhere solver = Tsit5()
 @everywhere function optim(p)
