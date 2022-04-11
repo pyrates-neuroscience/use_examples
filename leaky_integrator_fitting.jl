@@ -128,4 +128,4 @@ f = best_fitness(res)
 y = Array(solve(remake(ode, p=w_winner), solver, saveat=1e-2, reltol=1e-3, abstol=1e-6))[1:N, 1:steps]
 
 # save data to file
-npzwrite("li_fitted.npz", Dict("weight" => C, "y" => y'))
+npzwrite("~/Slurm/results/li_fitted.npz", Dict("weight" => C, "y" => y'))
