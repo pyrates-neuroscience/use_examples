@@ -1,6 +1,6 @@
 using Distributed
 
-addprocs(12)
+addprocs(8)
 
 @everywhere using BlackBoxOptim, LinearAlgebra, DifferentialEquations, NPZ, Plots
 
@@ -59,7 +59,7 @@ end
 end
 
 # import function arguments
-@everywhere vars = npzread("/home/rgf3807/PycharmProjects/use_examples/li_params.npz")
+@everywhere vars = npzread("li_params.npz")
 @everywhere args = "r0,tau,source_idx,k_d1,k_d2,k_d3,k_d4,k_d5,k_d6,k_d7,k_d8,k_d9,k_d10,k_d11,u_timed_input,u_input,time,weight,weight_0"
 @everywhere args = split(args, ",")
 
@@ -88,7 +88,7 @@ end
 @everywhere ode = ODEProblem(ode_call, vars["y"], (0.0, T), w)
 
 # define function call for blackboxoptim
-@everywhere target = npzread("/home/rgf3807/PycharmProjects/use_examples/li_target.npy")
+@everywhere target = npzread("li_target.npy")
 @everywhere z = target'
 @everywhere solver = Tsit5()
 @everywhere function optim(p)
@@ -112,7 +112,7 @@ end
 # perform optimization
 method = :xnes
 opt = bbsetup(optim; Method=method, Parameters=w, SearchRange=(-2.0, 2.0), NumDimensions=length(w), Workers=workers(),
-	MaxSteps=2000, TargetFitness=0.0, lambda=10, PopulationSize=10000, CallbackFunction=cb, CallbackInterval=1.0)
+	MaxSteps=5000, TargetFitness=0.0, lambda=10, PopulationSize=10000, CallbackFunction=cb, CallbackInterval=1.0)
 el = @elapsed res = bboptimize(opt)
 
 # retrieve optimization results
@@ -128,4 +128,4 @@ f = best_fitness(res)
 y = Array(solve(remake(ode, p=w_winner), solver, saveat=1e-2, reltol=1e-3, abstol=1e-6))[1:N, 1:steps]
 
 # save data to file
-npzwrite("/home/rgf3807/Slurm/results/li_fitted.npz", Dict("weight" => C, "y" => y'))
+npzwrite("li_fitted.npz", Dict("weight" => C, "y" => y'))
