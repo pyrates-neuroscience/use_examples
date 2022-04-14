@@ -1,6 +1,6 @@
 using Distributed
 
-addprocs(8)
+addprocs(1)
 
 @everywhere using BlackBoxOptim, LinearAlgebra, DifferentialEquations, NPZ, Plots
 
