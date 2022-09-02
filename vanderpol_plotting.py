@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pickle
 from scipy.signal import hilbert, butter, sosfilt, coherence
+import os
+p = os.environ['PATH']
+plt.rc('text', usetex=True)
 
 # preparations
 ##############
@@ -11,10 +14,10 @@ from scipy.signal import hilbert, butter, sosfilt, coherence
 plt.rcParams['figure.constrained_layout.use'] = True
 plt.rcParams['figure.dpi'] = 400
 plt.rcParams['figure.figsize'] = (12, 6)
-plt.rcParams['font.size'] = 8.0
-plt.rcParams['axes.titlesize'] = 10
-plt.rcParams['axes.labelsize'] = 10
-plt.rcParams['lines.linewidth'] = 0.7
+plt.rcParams['font.size'] = 14.0
+plt.rcParams['axes.titlesize'] = 16.0
+plt.rcParams['axes.labelsize'] = 16.0
+plt.rcParams['lines.linewidth'] = 1.0
 plt.rcParams["font.family"] = "sans-serif"
 
 # load data
@@ -82,20 +85,21 @@ fig = plt.figure(1)
 grid = gridspec.GridSpec(nrows=2, ncols=4, figure=fig)
 
 # plot the coherence matrix
-ax = fig.add_subplot(grid[:, :2])
-im = ax.imshow(coherences[::-1, :], aspect='equal')
-ax.set_xlabel(r'$\omega$')
-ax.set_ylabel(r'$J$')
-ax.set_xticks(np.arange(0, n_om, 3))
-ax.set_yticks(np.arange(0, n_J, 3))
-ax.set_xticklabels(np.round(omegas[::3], decimals=2))
-ax.set_yticklabels(np.round(weights[::-3], decimals=2))
-plt.title("Coherence between VPO and KO")
-fig.colorbar(im, ax=ax, shrink=0.6)
+ax1 = fig.add_subplot(grid[:, :2])
+im = ax1.imshow(coherences[::-1, :], aspect='equal')
+ax1.set_xlabel(r'$\omega$')
+ax1.set_ylabel(r'$J$')
+ax1.set_xticks(np.arange(0, n_om, 3))
+ax1.set_yticks(np.arange(0, n_J, 3))
+ax1.set_xticklabels(np.round(omegas[::3], decimals=2))
+ax1.set_yticklabels(np.round(weights[::-3], decimals=2))
+plt.title(r"\textbf{(A)} Coherence between VPO and KO")
+fig.colorbar(im, ax=ax1, shrink=0.6, label='signal (normalized amplitude)')
 
 # plot two exemplary time series
 start = 1050.0
-for i, (omega, J) in enumerate(zip([0.32, 0.42], [0.5, 1.0])):
+for i, (omega, J, cond, title) in enumerate(zip([0.32, 0.42], [0.5, 1.0], [(r"\textbf{B}", "white"), (r"\textbf{C}", "black")],
+                                                [r"\textbf{(B)} No entrainment", r"\textbf{(C)} Entrainment"])):
 
     ax = fig.add_subplot(grid[i, 2:])
 
@@ -112,11 +116,14 @@ for i, (omega, J) in enumerate(zip([0.32, 0.42], [0.5, 1.0])):
     s = res['VPO'].loc[start:, key1]
     ax.plot(s / np.max(np.abs(s)), color='black')
     ax.plot(np.sin(2*np.pi*res['KO'].loc[start:, key2]), color='orange')
+    ax.set_title(title)
+
+    # add figure label to the imshow plot
+    ax1.text(idx_c, n_J-idx_r, cond[0], color=cond[1], horizontalalignment='center', verticalalignment='center')
 
 # finishing touches
 ax.set_xlabel('time (s)')
-ax.set_ylabel('signal (normalized amplitude)')
-plt.legend(['Van der Pol', 'Kuramoto'])
+plt.legend(['Van der Pol', 'Kuramoto'], facecolor="gray", loc="upper right")
 fig.set_constrained_layout_pads(w_pad=0.01, h_pad=0.03, hspace=0., wspace=0.)
 fig.canvas.draw()
 fig.savefig('vanderpol.pdf')

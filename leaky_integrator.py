@@ -9,9 +9,9 @@ nodes = [f"p{i+1}" for i in range(N)]
 net = CircuitTemplate(name="li_coupled", nodes={key: li for key in nodes})
 
 # edge definition
-C = np.load("C.npy")  #np.random.uniform(low=-2.0, high=2.0, size=(N, N))
+C = np.load("J.npy")  #np.random.uniform(low=-2.0, high=2.0, size=(N, N))
 D = np.load("D.npy")  #np.random.choice([1.0, 2.0, 3.0], size=(N, N))
-#np.save("C.npy", C)
+#np.save("J.npy", C)
 #np.save("D.npy", D)
 S = D*0.3
 net.add_edges_from_matrix(source_var="tanh_op/m", target_var="li_op/m_in",
