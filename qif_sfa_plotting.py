@@ -9,7 +9,7 @@ from pyauto import PyAuto
 plt.rc('text', usetex=True)
 plt.rcParams['figure.constrained_layout.use'] = True
 plt.rcParams['figure.dpi'] = 400
-plt.rcParams['figure.figsize'] = (12, 6)
+plt.rcParams['figure.figsize'] = (12, 5)
 plt.rcParams['font.size'] = 14.0
 plt.rcParams['axes.titlesize'] = 16.0
 plt.rcParams['axes.labelsize'] = 16.0
