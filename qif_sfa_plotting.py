@@ -26,7 +26,7 @@ grid = gridspec.GridSpec(nrows=2, ncols=2, figure=fig)
 
 # time continuation
 ax = fig.add_subplot(grid[0, 1])
-ax = a.plot_continuation('PAR(14)', 'U(1)', cont='time', line_color_stable='k', ax=ax)
+ax = a.plot_continuation('PAR(14)', 'U(1)', cont='ss', line_color_stable='k', ax=ax)
 ax.set_xlabel('')
 ax.set_ylabel('')
 plt.title(r'\textbf{(B)} Asynchronous regime')
@@ -45,6 +45,10 @@ ax.set_xlabel(r'$\bar\eta$')
 ax.set_ylabel(r'firing rate ($r$)')
 ax.set_xlim([-10, 10])
 plt.title(r'\textbf{(A)} 1D bifurcation diagram')
+
+# add time series labels to the bifurcation diagram
+for eta, y, label in zip([-2.0, 3.0], [3.2, 1.6], [r'\textbf{C}', r'\textbf{B}']):
+    ax.text(eta, y, label, horizontalalignment='center', verticalalignment='center')
 
 # finishing touches
 fig.set_constrained_layout_pads(w_pad=0.01, h_pad=0.03, hspace=0., wspace=0.)
