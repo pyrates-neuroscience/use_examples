@@ -8,7 +8,7 @@ qif = CircuitTemplate.from_yaml(
     )
 
 # set model parameters
-qif.update_var(node_vars={'p/qif_sfa_op/Delta': 2.0, 'p/qif_sfa_op/alpha': 1.0, 'p/qif_sfa_op/eta': -10.0},
+qif.update_var(node_vars={'p/qif_sfa_op/Delta': 2.0, 'p/qif_sfa_op/alpha': 1.0, 'p/qif_sfa_op/eta': 3.0},
                edge_vars=[('p/qif_sfa_op/r', 'p/qif_sfa_op/r_in', {'weight': 15.0*np.sqrt(2.0)})])
 
 # run function generation
@@ -21,8 +21,8 @@ qif_auto = PyAuto(working_dir=None, auto_dir='/home/rgast/PycharmProjects/auto-0
 
 # perform numerical integration in time
 t_sols, t_cont = qif_auto.run(
-    e='qif_sfa', c='ivp', name='time', DS=1e-4, DSMIN=1e-10, EPSL=1e-08, NPR=100,
-    EPSU=1e-08, EPSS=1e-06, DSMAX=1e-2, NMX=20000, UZR={14: 150.0}, STOP={'UZ1'}
+    e='qif_sfa', c='ivp', name='ss', DS=1e-4, DSMIN=1e-10, EPSL=1e-08, NPR=10,
+    EPSU=1e-08, EPSS=1e-06, DSMAX=1e-1, NMX=20000, UZR={14: 200.0}, STOP={'UZ1'}
     )
 
 # continue eta
@@ -41,15 +41,9 @@ hopf_sols, hopf_cont = qif_auto.run(
 )
 
 # periodic solution time continuation
-ss_sols, ss_cont = qif_auto.run(
-    origin=eta_cont, starting_point='UZ1', name='ss', DS=1e-4, DSMIN=1e-10, EPSL=1e-08, NPR=10,
-    EPSU=1e-08, EPSS=1e-06, DSMAX=1e-1, NMX=10000, UZR={14: 300.0}, STOP={'UZ1'}, c='ivp'
-    )
-
-# periodic solution time continuation
 po_sols, po_cont = qif_auto.run(
-    origin=hopf_cont, starting_point='UZ1', name='po', DS=1e-4, DSMIN=1e-10, EPSL=1e-08, NPR=10,
-    EPSU=1e-08, EPSS=1e-06, DSMAX=1e-1, NMX=10000, UZR={14: 300.0}, STOP={'UZ1'}, c='ivp'
+    origin=hopf_cont, starting_point='UZ1', name='po', DS=1e-5, DSMIN=1e-10, EPSL=1e-08, NPR=10,
+    EPSU=1e-08, EPSS=1e-06, DSMAX=1e-1, NMX=10000, UZR={14: 400.0}, STOP={'UZ1'}, c='ivp'
     )
 
 qif_auto.to_file('qif_sfa_data.pkl')

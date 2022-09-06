@@ -68,7 +68,7 @@ double precision, intent(in) :: t
 args(1) = 1.0  ! tau
 args(2) = 2.0  ! Delta
 args(3) = 0.0  ! I_ext
-args(4) = -10.0  ! eta
+args(4) = 3.0  ! eta
 args(5) = 10.0  ! tau_a
 args(6) = 1.0  ! alpha
 args(7) = 21.213203435596427  ! weight
