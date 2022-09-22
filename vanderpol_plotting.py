@@ -13,7 +13,7 @@ plt.rc('text', usetex=True)
 # plot settings
 plt.rcParams['figure.constrained_layout.use'] = True
 plt.rcParams['figure.dpi'] = 400
-plt.rcParams['figure.figsize'] = (12, 6)
+plt.rcParams['figure.figsize'] = (12, 5)
 plt.rcParams['font.size'] = 14.0
 plt.rcParams['axes.titlesize'] = 16.0
 plt.rcParams['axes.labelsize'] = 16.0
