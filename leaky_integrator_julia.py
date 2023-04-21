@@ -4,7 +4,7 @@ clear_frontend_caches()
 
 # node definition
 li = NodeTemplate.from_yaml("model_templates.base_templates.tanh_node")
-N = 3
+N = 5
 nodes = [f"p{i+1}" for i in range(N)]
 net = CircuitTemplate(name="li_coupled", nodes={key: li for key in nodes})
 
@@ -15,7 +15,7 @@ D = np.load("D.npy")  #np.random.choice([1.0, 2.0, 3.0], size=(N, N))
 #np.save("D.npy", D)
 S = D*0.3
 net.add_edges_from_matrix(source_var="tanh_op/m", target_var="li_op/m_in",
-                          nodes=nodes, weight=C,
+                          source_nodes=nodes, weight=C,
                           edge_attr={'delay': D, 'spread': S}
                           )
 

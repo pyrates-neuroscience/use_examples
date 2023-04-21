@@ -182,7 +182,7 @@ parameters = ["J", "tau"]
 pickle.dump({"predictions": predictions, "targets": targets, "loss": losses, "ks": ks, "taus": taus,
              "params": parameters, "fitted": fitted_vals, "original": orig_vals, "true": target_vals,
              "loss_landscape": loss_2d},
-            open("leaky_integrator_data2.pkl", "wb"))
+            open("leaky_integrator_data.pkl", "wb"))
 
 # plotting
 ##########
