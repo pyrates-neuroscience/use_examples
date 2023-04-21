@@ -31,10 +31,16 @@ fig = plt.figure(1)
 grid = gridspec.GridSpec(nrows=2, ncols=3, figure=fig)
 
 # plot loss landscape
+n = 50
+ticks = np.arange(0, n, 10)
+labels = np.round(10.0**np.linspace(-1.0, 1.0, num=n)[ticks], decimals=1)
 ax = fig.add_subplot(grid[:, 0])
 im = ax.imshow(np.log(data["loss_landscape"]), aspect='equal')
 ax.set_xlabel(r'$\tau$')
 ax.set_ylabel(r'$k$')
+ax.set_xticks(ticks, labels=[str(l) for l in labels])
+ax.set_yticks(ticks, labels=[str(l) for l in labels])
+ax.invert_yaxis()
 c = fig.colorbar(im, ax=ax, shrink=0.6, label="log(MSE)")
 plt.title(r"\textbf{(A)} 2D loss landscape")
 

@@ -1,15 +1,18 @@
+import pandas as pd
 from rectipy import Network
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
 import pickle
 
+# select device on which to run the optimization
+device = "cpu"
 
 # preparations
 ##############
 
 # model parameters
-node = "neuron_model_templates.rate_neurons.leaky_integrator.tanh_pop"
+node = "neuron_model_templates.rate_neurons.leaky_integrator.tanh"
 N = 5
 J = np.load("J.npy")  #np.random.uniform(low=-1.0, high=1.0, size=(N, N))
 D = np.load("D.npy")  #np.random.choice([1.0, 2.0, 3.0], size=(N, N))
@@ -19,25 +22,27 @@ S = D*0.3
 pmin, pmax = 0.1, 10.0
 k0 = np.random.uniform(pmin, pmax)
 tau0 = np.random.uniform(pmin, pmax)
-u0 = np.random.randn(N)
+v0 = np.random.randn(N)
+dt = 1e-3
 
 # initialize networks
-target_net = Network.from_yaml(node=node, weights=J, edge_attr={'delay': D, 'spread': S}, source_var="tanh_op/r",
-                               target_var="li_op/r_in", input_var="li_op/I_ext", output_var="li_op/u", clear=True,
-                               float_precision="float64", file_name='target_net',
-                               node_vars={'all/li_op/u': u0})
-
-learning_net = Network.from_yaml(node=node, weights=J, edge_attr={'delay': D, 'spread': S}, source_var="tanh_op/r",
-                                 target_var="li_op/r_in", input_var="li_op/I_ext", output_var="li_op/u", clear=True,
-                                 train_params=['li_op/k', 'li_op/tau'], float_precision="float64",
-                                 node_vars={"all/li_op/k": k0, "all/li_op/tau": tau0}, file_name='learning_net')
+target_net = Network(dt=dt, device=device)
+target_net.add_diffeq_node("tanh", node=node, weights=J, edge_attr={'delay': D, 'spread': S}, source_var="tanh_op/r",
+                           target_var="li_op/r_in", input_var="li_op/I_ext", output_var="li_op/v", clear=True,
+                           float_precision="float64", file_name='target_net',
+                           node_vars={'all/li_op/v': v0})
+learning_net = Network(dt=dt, device=device)
+learning_net.add_diffeq_node("tanh", node=node, weights=J, edge_attr={'delay': D, 'spread': S}, source_var="tanh_op/r",
+                             target_var="li_op/r_in", input_var="li_op/I_ext", output_var="li_op/v", clear=True,
+                             train_params=['li_op/k', 'li_op/tau'], float_precision="float64",
+                             node_vars={"all/li_op/k": k0, "all/li_op/tau": tau0}, file_name='learning_net')
 
 # compile networks
 target_net.compile()
 learning_net.compile()
 
 # extract initial value vector for later state vector resets
-y0 = target_net.rnn_layer.y.clone().detach().numpy()
+y0 = target_net.get_node("tanh").y.clone().detach().cpu().numpy()
 
 # create target data
 ####################
@@ -47,7 +52,6 @@ tol = 1e-3
 error = 1.0
 
 # input parameters
-dt = 1e-3
 freq = 0.2
 amp = 0.1
 
@@ -59,7 +63,7 @@ epoch = 0
 
 # target data creation
 print("Creating target data...")
-target_net.rnn_layer.reset(y0)
+target_net.reset({"tanh": y0})
 targets = []
 for step in range(epoch_steps):
     inp = np.sin(2 * np.pi * freq * step * dt) * amp
@@ -77,15 +81,23 @@ loss = torch.nn.MSELoss()
 n = 50
 vals = 10.0**np.linspace(-1.0, 1.0, num=n)
 
+# network initialization
+net = Network(dt=dt, device=device)
+
 # loss landscape mapping
+print("Approximating loss landscape...")
 loss_2d = np.zeros((n, n))
 for i, k in enumerate(vals):
     for j, tau in enumerate(vals):
-        net = Network.from_yaml(node=node, weights=J, edge_attr={'delay': D, 'spread': S}, source_var="tanh_op/r",
-                                target_var="li_op/r_in", input_var="li_op/I_ext", output_var="li_op/u", clear=True,
-                                node_vars={'all/li_op/u': u0, 'all/li_op/tau': float(tau), 'all/li_op/k': float(k)},
-                                verbose=False, float_precision="float64")
+
+        # add leaky-integrator population to the network instance
+        net.add_diffeq_node("tanh", node=node, weights=J, edge_attr={'delay': D, 'spread': S}, source_var="tanh_op/r",
+                            target_var="li_op/r_in", input_var="li_op/I_ext", output_var="li_op/v", clear=True,
+                            node_vars={'all/li_op/v': v0, 'all/li_op/tau': float(tau), 'all/li_op/k': float(k)},
+                            verbose=False, float_precision="float64")
         net.compile()
+
+        # collect the losses for each value of the 2D parameter grid
         losses = []
         for step in range(epoch_steps):
             inp = np.sin(2 * np.pi * freq * step * dt) * amp
@@ -94,9 +106,18 @@ for i, k in enumerate(vals):
             losses.append(error_tmp.item())
         loss_2d[i, j] = np.mean(losses)
 
+        # clean up the network
+        net.clear()
+
+print("Finished.")
+
+# display loss landscape
 plt.imshow(np.log(loss_2d))
 plt.colorbar()
 plt.show()
+
+# turn loss landscape into a dataframe
+loss_2d = pd.DataFrame(index=vals, columns=vals, data=loss_2d)
 
 # optimization
 ##############
@@ -105,12 +126,13 @@ plt.show()
 opt = torch.optim.Rprop(learning_net.parameters(), lr=0.01, etas=(0.5, 1.1), step_sizes=(1e-5, 1e-1))
 
 # optimization loop
+print("Starting optimization...")
 losses, ks, taus = [], [], []
 while error > tol and epoch < n_epochs:
 
     # error calculation epoch
     losses_tmp = []
-    learning_net.rnn_layer.reset(y0)
+    learning_net.reset({"tanh": y0})
     for step in range(epoch_steps):
         inp = np.sin(2*np.pi*freq*step*dt) * amp
         target = targets[step]
@@ -128,10 +150,12 @@ while error > tol and epoch < n_epochs:
     # save results and display progress
     error = np.mean(losses_tmp)
     losses.append(error)
-    ks.append(learning_net.rnn_layer.args[1].clone().detach().numpy())
-    taus.append(learning_net.rnn_layer.args[0].clone().detach().numpy())
+    ks.append(learning_net.get_var("tanh", "li_op/k").clone().detach().cpu().numpy())
+    taus.append(learning_net.get_var("tanh", "li_op/tau").clone().detach().cpu().numpy())
     epoch += 1
     print(f"Training epoch #{epoch} finished. Mean epoch loss: {error}.")
+
+print("Finished.")
 
 # model testing
 ###############
@@ -149,14 +173,16 @@ print("Finished.")
 #####################
 
 targets = [t.detach().numpy() for t in targets]
-target_vals = [target_net.rnn_layer.args[1].numpy(), target_net.rnn_layer.args[0].numpy()]
+target_vals = [target_net.get_var("tanh", "li_op/k").detach().cpu().numpy(),
+               target_net.get_var("tanh", "li_op/tau").detach().cpu().numpy()]
 orig_vals = [k0, tau0]
-fitted_vals = [learning_net.rnn_layer.args[1].detach().numpy(), learning_net.rnn_layer.args[0].detach().numpy()]
+fitted_vals = [learning_net.get_var("tanh", "li_op/k").detach().cpu().numpy(),
+               learning_net.get_var("tanh", "li_op/tau").detach().cpu().numpy()]
 parameters = ["J", "tau"]
 pickle.dump({"predictions": predictions, "targets": targets, "loss": losses, "ks": ks, "taus": taus,
              "params": parameters, "fitted": fitted_vals, "original": orig_vals, "true": target_vals,
              "loss_landscape": loss_2d},
-            open("leaky_integrator_data.pkl", "wb"))
+            open("leaky_integrator_data2.pkl", "wb"))
 
 # plotting
 ##########
