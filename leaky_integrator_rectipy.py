@@ -42,7 +42,7 @@ target_net.compile()
 learning_net.compile()
 
 # extract initial value vector for later state vector resets
-y0 = target_net.get_node("tanh").y.clone().detach().cpu().numpy()
+y0 = {key: val.clone() for key, val in target_net.state.items()}
 
 # create target data
 ####################
@@ -57,13 +57,12 @@ amp = 0.1
 
 # epoch parameters
 n_epochs = 100
-disp_steps = 1000
 epoch_steps = 30000
 epoch = 0
 
 # target data creation
 print("Creating target data...")
-target_net.reset({"tanh": y0})
+target_net.reset(y0)
 targets = []
 for step in range(epoch_steps):
     inp = np.sin(2 * np.pi * freq * step * dt) * amp
@@ -83,6 +82,10 @@ vals = 10.0**np.linspace(-1.0, 1.0, num=n)
 
 # network initialization
 net = Network(dt=dt, device=device)
+net.add_diffeq_node("tanh", node=node, weights=J, edge_attr={'delay': D, 'spread': S}, source_var="tanh_op/r",
+                    target_var="li_op/r_in", input_var="li_op/I_ext", output_var="li_op/v", clear=True,
+                    verbose=False, float_precision="float64")
+net.compile()
 
 # loss landscape mapping
 print("Approximating loss landscape...")
@@ -90,12 +93,12 @@ loss_2d = np.zeros((n, n))
 for i, k in enumerate(vals):
     for j, tau in enumerate(vals):
 
-        # add leaky-integrator population to the network instance
-        net.add_diffeq_node("tanh", node=node, weights=J, edge_attr={'delay': D, 'spread': S}, source_var="tanh_op/r",
-                            target_var="li_op/r_in", input_var="li_op/I_ext", output_var="li_op/v", clear=True,
-                            node_vars={'all/li_op/v': v0, 'all/li_op/tau': float(tau), 'all/li_op/k': float(k)},
-                            verbose=False, float_precision="float64")
-        net.compile()
+        # reset the network state
+        net.reset(y0)
+
+        # change network parameter values
+        for key, val in {'li_op/tau': float(tau), 'li_op/k': float(k)}.items():
+            net.set_var("tanh", key, val)
 
         # collect the losses for each value of the 2D parameter grid
         losses = []
@@ -106,10 +109,8 @@ for i, k in enumerate(vals):
             losses.append(error_tmp.item())
         loss_2d[i, j] = np.mean(losses)
 
-        # clean up the network
-        net.clear()
-
-print("Finished.")
+    # report progress
+    print(f"Progress: {np.round(100*(i+1)/n, decimals=0)} %")
 
 # display loss landscape
 plt.imshow(np.log(loss_2d))
@@ -128,24 +129,24 @@ opt = torch.optim.Rprop(learning_net.parameters(), lr=0.01, etas=(0.5, 1.1), ste
 # optimization loop
 print("Starting optimization...")
 losses, ks, taus = [], [], []
+error_tmp = torch.zeros(1)
 while error > tol and epoch < n_epochs:
 
     # error calculation epoch
     losses_tmp = []
-    learning_net.reset({"tanh": y0})
+    learning_net.reset(y0)
     for step in range(epoch_steps):
         inp = np.sin(2*np.pi*freq*step*dt) * amp
         target = targets[step]
         prediction = learning_net.forward(inp)
-        error_tmp = loss(prediction, target)
-        error_tmp.backward(retain_graph=True)
-        if step % disp_steps == 0:
-            print(f"Steps finished: {step}. Current loss: {error_tmp.item()}")
+        error_tmp += loss(prediction, target)
         losses_tmp.append(error_tmp.item())
 
     # optimization step
-    opt.step()
     opt.zero_grad()
+    error_tmp.backward()
+    opt.step()
+    error_tmp = torch.zeros(1)
 
     # save results and display progress
     error = np.mean(losses_tmp)
@@ -155,18 +156,16 @@ while error > tol and epoch < n_epochs:
     epoch += 1
     print(f"Training epoch #{epoch} finished. Mean epoch loss: {error}.")
 
-print("Finished.")
-
 # model testing
 ###############
 
 print("Starting testing...")
-learning_net.rnn_layer.reset(y0)
+learning_net.reset(y0)
 predictions = []
 for step in range(epoch_steps):
     inp = np.sin(2 * np.pi * freq * step * dt) * amp
     prediction = learning_net.forward(inp)
-    predictions.append(prediction.detach().numpy())
+    predictions.append(prediction.detach().cpu().numpy())
 print("Finished.")
 
 # saving data to file
