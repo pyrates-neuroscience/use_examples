@@ -67,5 +67,5 @@ for i, (s, t) in enumerate(zip([data["predictions"], data["targets"]],
 # finishing touches
 fig.set_constrained_layout_pads(w_pad=0.01, h_pad=0.03, hspace=0., wspace=0.)
 fig.canvas.draw()
-fig.savefig('leaky_integrator.pdf')
+fig.savefig('leaky_integrator.png')
 plt.show()

@@ -1,6 +1,6 @@
 import numpy as np
 from pyrates import CircuitTemplate
-from pyauto import PyAuto
+from pycobi import ODESystem
 
 # PyRates initiation
 qif = CircuitTemplate.from_yaml(
@@ -17,7 +17,7 @@ qif.get_run_func(func_name='qif_run', file_name='qif_sfa', step_size=1e-4,
                  float_precision='float64', auto=True)
 
 # initialize PyAuto
-qif_auto = PyAuto(working_dir=None, auto_dir='/home/rgast/PycharmProjects/auto-07p')
+qif_auto = ODESystem(working_dir=None, auto_dir='~/PycharmProjects/auto-07p', init_cont=False)
 
 # perform numerical integration in time
 t_sols, t_cont = qif_auto.run(

@@ -1,6 +1,6 @@
 from matplotlib import gridspec
 import matplotlib.pyplot as plt
-from pyauto import PyAuto
+from pycobi import ODESystem
 
 # preparations
 ##############
@@ -18,7 +18,7 @@ plt.rcParams["font.family"] = "sans-serif"
 markersize = 200
 
 # load data
-a = PyAuto.from_file("qif_sfa_data.pkl", auto_dir='/home/rgast/PycharmProjects/auto-07p')
+a = ODESystem.from_file("qif_sfa_data.pkl", auto_dir='~/PycharmProjects/auto-07p')
 
 # create figure layout
 fig = plt.figure(1)
@@ -55,5 +55,5 @@ for eta, y, label in zip([-2.0, 3.0], [3.3, 1.5], [r'\textbf{C}', r'\textbf{B}']
 # finishing touches
 fig.set_constrained_layout_pads(w_pad=0.01, h_pad=0.03, hspace=0., wspace=0.)
 fig.canvas.draw()
-fig.savefig('qif_sfa.pdf')
+fig.savefig('qif_sfa.png')
 plt.show()
