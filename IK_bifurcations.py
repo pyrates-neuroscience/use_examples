@@ -63,12 +63,9 @@ plt.show()
 # perform a 2-parameter continuation of the fold and hopf curves in the eta-d parameter space
 cont.run(name="eta_d_fold1", origin="eta:1", starting_point="LP1", ICP=[17, 9], ILP=0, IPS=1, ISW=2, NPR=50, RL0=0.0,
          RL1=200, bidirectional=True)
-cont.run(name="eta_d_fold2", origin="eta:1", starting_point="LP2", ICP=[17, 9], ILP=0, IPS=1, ISW=2, NPR=50, RL0=0.0,
-         RL1=200, bidirectional=True)
-cont.run(name="eta_d_hopf1", origin="eta:2", starting_point="HB1", ICP=[17, 9], ILP=0, IPS=1, ISW=2, NPR=50, RL0=0.0,
-         RL1=200, bidirectional=True)
-cont.run(name="eta_d_hopf2", origin="eta:2", starting_point="HB2", ICP=[17, 9], ILP=0, IPS=1, ISW=2, NPR=50, RL0=0.0,
-         RL1=200, bidirectional=True)
+cont.run(name="eta_d_fold2", origin="eta:1", starting_point="LP2", ICP=[17, 9], bidirectional=True)
+cont.run(name="eta_d_hopf1", origin="eta:2", starting_point="HB1", ICP=[17, 9], bidirectional=True)
+cont.run(name="eta_d_hopf2", origin="eta:2", starting_point="HB2", ICP=[17, 9], bidirectional=True)
 
 # plot the results
 fig, ax = plt.subplots(figsize=(12, 6))
