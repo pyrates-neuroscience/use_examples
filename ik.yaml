@@ -81,4 +81,4 @@ ik_mf:
   nodes:
     p: ik_mf_pop
   edges:
-    [p/ik_mf_pop/s, p/ik_mf_pop/s_in, null, {weight: 1.0}]
+    - [p/ik_mf_op/s, p/ik_mf_op/s_in, null, {weight: 1.0}]
