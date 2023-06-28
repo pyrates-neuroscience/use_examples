@@ -1,0 +1,84 @@
+%YAML 1.2
+---
+
+# Operator templates (operators are used to define sets of coupled differential equations in PyRates)
+#####################################################################################################
+
+# operator for a single Izhikevich neuron
+ik_op:
+  base: OperatorTemplate
+  equations:
+    - "v' = (k*(v-v_r)*(v-v_theta) - u + eta + I_ext + g*s_in*(E_r - v)) / C"
+    - "u' = (b*(v-v_r) - u) / tau_u + kappa*spike"
+    - "s' = -s/tau_s + spike"
+  variables:
+    s: output(0.0)
+    v: variable(-60.0)
+    u: variable(0.0)
+    C: 100.0
+    k: 0.7
+    v_r: -60.0
+    v_theta: -40.0
+    eta: 0.0
+    g: 1.0
+    E_r: 0.0
+    b: -2.0
+    tau_u: 33.33
+    kappa: 10.0
+    tau_s: 6.0
+    spike: input(0.0)
+    s_in: input(0.0)
+    I_ext: input(0.0)
+
+# mean-field operator for a population of coupled Izhikevich neurons
+ik_mf_op:
+  base: OperatorTemplate
+  equations:
+    - "r' = (Delta*k^2*(v-v_r)/(pi*C) + r*(k*(2.0*v-v_r-v_t) - g*s_in)) / C"
+    - "v' = (k*v*(v-v_r-v_t) - C*pi*r*(Delta+pi*C*r/k) + k*v_r*v_t + g*s_in*(E_r-v) + eta + I_ext - u) / C"
+    - "u' = (b*(v-v_r) - u)/tau_u + kappa*r"
+    - "s' = -s/tau_s + r"
+  variables:
+    r: output(0.0)
+    v: variable(-60.0)
+    u: variable(0.0)
+    s: variable(0.0)
+    Delta: 0.1
+    C: 100.0
+    k: 0.7
+    v_r: -60.0
+    v_t: -40.0
+    g: 20.0
+    E_r: 0.0
+    b: -2.0
+    tau_u: 33.33
+    kappa: 10.0
+    tau_s: 6.0
+    eta: 0.0
+    I_ext: input(0.0)
+    s_in: input(0.0)
+
+# node templates (nodes are used to group operators together to form a dynamic network node in PyRates)
+#######################################################################################################
+
+# a single IK neuron
+ik_neuron:
+  base: NodeTemplate
+  operators:
+    - ik_op
+
+# an IK mean-field population
+ik_mf_pop:
+  base: NodeTemplate
+  operators:
+    - ik_mf_op
+
+# circuit templates (circuits are collections of nodes, connected by edges)
+###########################################################################
+
+ik_mf:
+  base: CircuitTemplate
+  nodes:
+    p: ik_mf_pop
+  edges:
+    [p/ik_mf_pop/s, p/ik_mf_pop/s_in, null, {weight: 1.0}]
