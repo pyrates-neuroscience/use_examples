@@ -4,8 +4,13 @@ FROM ubuntu:20.04
 # set working directory to home
 WORKDIR /home
 
+# update ubuntu basics
+RUN apt-get -y update
+RUN apt-get install -y software-properties-common
+RUN add-apt-repository -y ppa:deadsnakes/ppa
+
 # install python
-RUN apt-get update && apt-get install -y python3.10 python3-pip
+RUN apt-get install -y python3.10 python3-pip
 
 # install git
 RUN apt-get install -y git
