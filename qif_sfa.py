@@ -17,11 +17,11 @@ qif.get_run_func(func_name='qif_run', file_name='qif_sfa', step_size=1e-4,
                  float_precision='float64', auto=True)
 
 # initialize PyAuto
-qif_auto = ODESystem(working_dir=None, auto_dir='~/PycharmProjects/auto-07p', init_cont=False)
+qif_auto = ODESystem('qif_sfa', working_dir=None, auto_dir='~/PycharmProjects/auto-07p', init_cont=False)
 
 # perform numerical integration in time
 t_sols, t_cont = qif_auto.run(
-    e='qif_sfa', c='ivp', name='ss', DS=1e-4, DSMIN=1e-10, EPSL=1e-08, NPR=10,
+    c='ivp', name='ss', DS=1e-4, DSMIN=1e-10, EPSL=1e-08, NPR=10,
     EPSU=1e-08, EPSS=1e-06, DSMAX=1e-1, NMX=20000, UZR={14: 200.0}, STOP={'UZ1'}
     )
 

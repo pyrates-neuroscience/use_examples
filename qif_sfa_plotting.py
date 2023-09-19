@@ -15,7 +15,7 @@ plt.rcParams['axes.titlesize'] = 16.0
 plt.rcParams['axes.labelsize'] = 16.0
 plt.rcParams['lines.linewidth'] = 1.0
 plt.rcParams["font.family"] = "sans-serif"
-markersize = 200
+markersize = 5
 
 # load data
 a = ODESystem.from_file("qif_sfa_data.pkl", auto_dir='~/PycharmProjects/auto-07p')
@@ -26,13 +26,13 @@ grid = gridspec.GridSpec(nrows=2, ncols=2, figure=fig)
 
 # time continuation
 ax = fig.add_subplot(grid[0, 1])
-a.plot_continuation('PAR(14)', 'U(1)', cont='ss', line_color_stable='k', ax=ax)
+a.plot_continuation('t', 'U(1)', cont='ss', line_color_stable='k', ax=ax)
 ax.set_xlim([-1.0, 70.0])
 ax.set_xlabel('')
 ax.set_ylabel(r'firing rate ($r$)')
 plt.title(r'\textbf{(B)} Asynchronous regime')
 ax = fig.add_subplot(grid[1, 1])
-a.plot_continuation('PAR(14)', 'U(1)', cont='po', line_color_stable='orange', ax=ax)
+a.plot_continuation('t', 'U(1)', cont='po', line_color_stable='orange', ax=ax)
 ax.set_xlim([200.0, 350.0])
 ax.set_xlabel(r'time (in units of $\tau$)')
 ax.set_ylabel(r'firing rate ($r$)')
