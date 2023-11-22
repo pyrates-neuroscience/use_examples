@@ -4,7 +4,7 @@ from pycobi import ODESystem
 
 # PyRates initiation
 qif = CircuitTemplate.from_yaml(
-    "model_templates.neural_mass_models.qif.qif_sfa"
+    "model_definitions/qif_sfa"
     )
 
 # set model parameters

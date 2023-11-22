@@ -12,12 +12,12 @@ device = "cpu"
 ##############
 
 # model parameters
-node = "neuron_model_templates.rate_neurons.leaky_integrator.tanh"
+node = "model_definitions/tanh"
 N = 5
-J = np.load("J.npy")  #np.random.uniform(low=-1.0, high=1.0, size=(N, N))
-D = np.load("D.npy")  #np.random.choice([1.0, 2.0, 3.0], size=(N, N))
-#np.save("J.npy", C)
-#np.save("D.npy", D)
+J = np.random.uniform(low=-1.0, high=1.0, size=(N, N))  # np.load("J.npy")
+D = np.random.choice([1.0, 2.0, 3.0], size=(N, N))  #np.load("D.npy")
+np.save("J.npy", J)
+np.save("D.npy", D)
 S = D*0.3
 pmin, pmax = 0.1, 10.0
 k0 = np.random.uniform(pmin, pmax)
@@ -77,7 +77,7 @@ print("Finished.")
 loss = torch.nn.MSELoss()
 
 # parameter space definition
-n = 50
+n = 10
 vals = 10.0**np.linspace(-1.0, 1.0, num=n)
 
 # network initialization

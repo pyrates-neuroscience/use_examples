@@ -15,7 +15,7 @@ plt.rcParams['axes.titlesize'] = 16.0
 plt.rcParams['axes.labelsize'] = 16.0
 plt.rcParams['lines.linewidth'] = 1.0
 plt.rcParams["font.family"] = "sans-serif"
-markersize = 5
+markersize = 8
 
 # load data
 a = ODESystem.from_file("qif_sfa_data.pkl", auto_dir='~/PycharmProjects/auto-07p')
@@ -34,6 +34,7 @@ plt.title(r'\textbf{(B)} Asynchronous regime')
 ax = fig.add_subplot(grid[1, 1])
 a.plot_continuation('t', 'U(1)', cont='po', line_color_stable='orange', ax=ax)
 ax.set_xlim([200.0, 350.0])
+ax.set_yticks([0.0, 1.5, 3.0])
 ax.set_xlabel(r'time (in units of $\tau$)')
 ax.set_ylabel(r'firing rate ($r$)')
 plt.title(r'\textbf{(C)} Synchronous regime')
@@ -55,5 +56,5 @@ for eta, y, label in zip([-2.0, 3.0], [3.3, 1.5], [r'\textbf{C}', r'\textbf{B}']
 # finishing touches
 fig.set_constrained_layout_pads(w_pad=0.01, h_pad=0.03, hspace=0., wspace=0.)
 fig.canvas.draw()
-fig.savefig('qif_sfa.png')
+fig.savefig('qif_sfa.svg')
 plt.show()

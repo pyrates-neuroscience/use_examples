@@ -54,11 +54,11 @@ def get_phase(signal, N, freqs, fs):
 
 # calculate and store coherences
 coherences = np.zeros((n_J, n_om))
-for key1, key2 in zip(res_map['VPO'].columns, res_map['KO'].columns):
+for key1, key2 in zip(res['VPO'].columns, res['KO'].columns):
 
     # extract parameter set
-    omega = res_map['KO'].at['omega', key2]
-    J = res_map['KO'].at['J', key2]
+    omega = res_map.at[key2[0], 'omega']
+    J = res_map.at[key2[0], 'J']
 
     # find coherence matrix position that corresponds to these parameters
     idx_r = np.argmin(np.abs(weights - J))
@@ -108,9 +108,9 @@ for i, (omega, J, cond, title) in enumerate(zip([0.32, 0.42], [0.5, 1.0], [(r"\t
     idx_c = np.argmin(np.abs(omegas - omega))
 
     # find time series with that particular set of parameters
-    idx1 = (res_map['VPO'].loc["J", :] == weights[idx_r]) * (res_map['VPO'].loc["omega", :] == omegas[idx_c])
-    idx2 = (res_map['KO'].loc["J", :] == weights[idx_r]) * (res_map['KO'].loc["omega", :] == omegas[idx_c])
-    key1, key2 = res_map['VPO'].columns.values[idx1], res_map['KO'].columns.values[idx2]
+    idx1 = (res_map.loc[:, "J"] == weights[idx_r]) * (res_map.loc[:, "omega"] == omegas[idx_c])
+    idx2 = (res_map.loc[:, "J"] == weights[idx_r]) * (res_map.loc[:, "omega"] == omegas[idx_c])
+    key1, key2 = res_map.index.values[idx1], res_map.index.values[idx2]
 
     # plot the time series
     s = res['VPO'].loc[start:, key1]

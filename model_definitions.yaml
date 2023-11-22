@@ -1,0 +1,128 @@
+%YAML 1.2
+---
+
+# Operator templates (operators are used to define sets of coupled differential equations in PyRates)
+#####################################################################################################
+
+# operator for the Van der Pol oscillator
+vdp_op:
+  base: OperatorTemplate
+  equations:
+    - "x' = z"
+    - "z' = mu*z*(1 - x^2) - x + inp"
+  variables:
+    x: output(0.0)
+    z: variable(1.0)
+    mu: 1.0
+    inp: input(0.0)
+
+# phase evolution operator for the Kuramoto oscillator
+phase_op:
+  base: OperatorTemplate
+  equations:
+    - "d/dt * theta = omega + K*s_in + s_ext"
+  variables:
+    theta: output
+    omega: 10.0
+    K: 1.0
+    s_in: input
+    s_ext: input
+
+# sinusoidal wrapper
+sin_op:
+  base: OperatorTemplate
+  equations:
+    - "s = sin(2*pi*theta)"
+  variables:
+    theta: input
+    s: output
+
+# mean-field equations for a population of globally coupled quadratic integrate-and-fire (QIF) neurons
+qif_op:
+  base: OperatorTemplate
+  equations:
+    - "r' = (Delta/(pi*tau) + 2.0*r*v) / tau"
+    - "v' = (v^2 + eta + I_ext + tau*r_in - (pi*tau*r)^2) / tau"
+  variables:
+    r: output(0.01)
+    v: variable(-2.0)
+    Delta: 1.0
+    tau: 1.0
+    eta: -5.0
+    I_ext: input(0.0)
+    r_in: input(0.0)
+
+# mean-field equations for qif neurons with spike-frequency adaptation (SFA)
+qif_sfa_op:
+  base: qif_op
+  equations:
+    replace:
+      eta: eta - a
+    add:
+      - "a' = x/tau_a"
+      - "x' = alpha*r - 2.*x/tau_a - a/tau_a"
+  variables:
+    a: variable(0.0)
+    x: variable(0.0)
+    alpha: 0.5
+    tau_a: 10.0
+
+# leaky integrator operator
+li_op:
+  base: OperatorTemplate
+  equations: "v' = -v/tau + k*r_in + I_ext + eta"
+  variables:
+    v: output(0.0)
+    tau: 10.0
+    k: 1.0
+    eta: 0.0
+    r_in: input(0.0)
+    I_ext: input(0.0)
+
+# hyperbolic tangent transformation
+tanh_op:
+  base: OperatorTemplate
+  equations: "r = tanh(v)"
+  variables:
+    r: output(0.0)
+    v: input(0.0)
+
+# node templates (nodes are used to group operators together to form a dynamic network node in PyRates)
+#######################################################################################################
+
+# Van der Pol oscillator
+vdp_pop:
+  base: NodeTemplate
+  operators:
+    - vdp_op
+
+# Kuramoto oscillator with a sinusoidal wrapper that converts the raw phase into a periodic signal
+sin_pop:
+  base: NodeTemplate
+  operators:
+    - phase_op
+    - sin_op
+
+# population of QIF neurons with SFA
+qif_sfa_pop:
+  base: NodeTemplate
+  operators:
+    - qif_sfa_op
+
+# leaky integrator node with a tanh activation function
+tanh:
+  base: NodeTemplate
+  operators:
+    - li_op
+    - tanh_op
+
+# circuit templates (circuits are collections of nodes, connected by edges)
+###########################################################################
+
+# single QIF population with SFA and recurrent coupling
+qif_sfa:
+  base: CircuitTemplate
+  nodes:
+    p: qif_sfa_pop
+  edges:
+    - [p/qif_sfa_op/r, p/qif_sfa_op/r_in, null, {weight: 15.0}]

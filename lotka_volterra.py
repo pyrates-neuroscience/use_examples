@@ -40,8 +40,7 @@ T = 100.0
 dt = 1e-3
 
 # generate function
-func, args, _, _ = model.get_run_func(simulation_time=T, step_size=dt, func_name="lotka_volterra", solver="scipy",
-                                      backend="numpy", in_place=False)
+func, args, _, _ = model.get_run_func(step_size=dt, func_name="lotka_volterra", adaptive=True, backend="matlab")
 
 # perform simulation of DDE system via ddeint
 #############################################

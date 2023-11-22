@@ -3,12 +3,8 @@ import pickle
 from pyrates import CircuitTemplate, NodeTemplate, grid_search
 
 # define nodes
-VPO = NodeTemplate.from_yaml(
-    "model_templates.coupled_oscillators.vanderpol.vdp_pop"
-    )
-KO = NodeTemplate.from_yaml(
-    "model_templates.coupled_oscillators.kuramoto.sin_pop"
-    )
+VPO = NodeTemplate.from_yaml("model_definitions/vdp_pop")
+KO = NodeTemplate.from_yaml("model_definitions/sin_pop")
 
 # define network
 net = CircuitTemplate(
