@@ -126,3 +126,15 @@ qif_sfa:
     p: qif_sfa_pop
   edges:
     - [p/qif_sfa_op/r, p/qif_sfa_op/r_in, null, {weight: 15.0}]
+
+# three-column JansenRit model
+ThreeColumnNetwork:
+  base: CircuitTemplate
+  circuits:
+    Column1: model_templates.neural_mass_models.jansenrit.JRC
+    Column2: model_templates.neural_mass_models.jansenrit.JRC
+    Column3: model_templates.neural_mass_models.jansenrit.JRC
+  edges:
+    - [Column1/pc/pro/m, Column2/pc/rpo_e_in/m_in, null, {"weight": 1.2}]
+    - [Column2/pc/pro/m, Column3/pc/rpo_e_in/m_in, null, {"weight": 0.4}]
+    - [Column3/pc/pro/m, Column1/pc/rpo_e_in/m_in, null, {"weight": 0.8}]
